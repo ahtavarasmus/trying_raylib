@@ -19,9 +19,11 @@ int main(void)
     int going = 0; // 0 == not going, 1 == going
 
     // random walls for the grid
-    for (int i = 0; i < 1500; i++) {
+    for (int i = 0; i < 1000; i++) {
         grid[rand() % grid_size][rand() % grid_size] = 1;
     }
+    // random ending point
+    grid[rand() % grid_size][rand() % grid_size] = 2;
 
 
     int x = grid_size/2;
@@ -74,40 +76,63 @@ int main(void)
             printf("grid[queue[queueIndex][0]][queue[queueIndex][1] - 1]: %d\n", grid[queue[queueIndex][0]][queue[queueIndex][1] - 1]);
 
             // check if we are at the end
-            if (queue[queueIndex][0] == grid_size-1 && queue[queueIndex][1] == grid_size-1) {
+            if (grid[queue[queueIndex][0]][queue[queueIndex][1]] == 2) {
                 going = 0;
                 printf("found\n");
-            }
-            // check if we can go up
-            if (grid[queue[queueIndex][0]][queue[queueIndex][1] - 1] == 0 && visited[queue[queueIndex][0]][queue[queueIndex][1] - 1] == 0) {
-                queue[queueSize][0] = queue[queueIndex][0];
-                queue[queueSize][1] = queue[queueIndex][1] - 1;
-                visited[queue[queueIndex][0]][queue[queueIndex][1] - 1] = 1;
-                queueSize++;
-                queueIndex++;
+            } else {
+                int found_some = 0;
+                int in_grid = 0;
+                // check if we can go up
+                if (queue[queueIndex][1] - 1 >= 0) {
+                    int up = grid[queue[queueIndex][0]][queue[queueIndex][1] - 1];
+                    int up_visited = visited[queue[queueIndex][0]][queue[queueIndex][1] - 1];
+                    if ((up == 0 || up == 2) && up_visited == 0) {
+                        queue[queueSize][0] = queue[queueIndex][0];
+                        queue[queueSize][1] = queue[queueIndex][1] - 1;
+                        visited[queue[queueIndex][0]][queue[queueIndex][1] - 1] = 1;
+                        queueSize++;
+                        found_some = 1;
+                    }
+                }
 
-            }
-            // check if we can go down
-            if (grid[queue[queueIndex][0]][queue[queueIndex][1] + 1] == 0 && visited[queue[queueIndex][0]][queue[queueIndex][1] + 1] == 0) {
-                queue[queueSize][0] = queue[queueIndex][0];
-                queue[queueSize][1] = queue[queueIndex][1] + 1;
-                visited[queue[queueIndex][0]][queue[queueIndex][1] + 1] = 1;
-                queueSize++, queueIndex++;
-            }
-            // check if we can go left
-            if (grid[queue[queueIndex][0] - 1][queue[queueIndex][1]] == 0 && visited[queue[queueIndex][0] - 1][queue[queueIndex][1]] == 0) {
-                queue[queueSize][0] = queue[queueIndex][0] - 1;
-                queue[queueSize][1] = queue[queueIndex][1];
-                visited[queue[queueIndex][0] - 1][queue[queueIndex][1]] = 1;
-                queueSize++;
-                queueIndex++;
-            }
-            // check if we can go right
-            if (grid[queue[queueIndex][0] + 1][queue[queueIndex][1]] == 0 && visited[queue[queueIndex][0] + 1][queue[queueIndex][1]] == 0) {
-                queue[queueSize][0] = queue[queueIndex][0] + 1;
-                queue[queueSize][1] = queue[queueIndex][1];
-                visited[queue[queueIndex][0] + 1][queue[queueIndex][1]] = 1;
-                queueSize++;
+                // check if we can go down
+                if (queue[queueIndex][1] + 1 < grid_size) {
+                    int down = grid[queue[queueIndex][0]][queue[queueIndex][1] + 1];
+                    int down_visited = visited[queue[queueIndex][0]][queue[queueIndex][1] + 1];
+                    if ((down == 0 || down == 2) && down_visited == 0) {
+                        queue[queueSize][0] = queue[queueIndex][0];
+                        queue[queueSize][1] = queue[queueIndex][1] + 1;
+                        visited[queue[queueIndex][0]][queue[queueIndex][1] + 1] = 1;
+                        queueSize++;
+                        found_some = 1;
+                    }
+                }
+                
+                // check if we can go left
+                if (queue[queueIndex][0] - 1 >= 0) {
+                    int left = grid[queue[queueIndex][0] - 1][queue[queueIndex][1]];
+                    int left_visited = visited[queue[queueIndex][0] - 1][queue[queueIndex][1]];
+                    if ((left == 0 || left == 2) && left_visited == 0) {
+                        queue[queueSize][0] = queue[queueIndex][0] - 1;
+                        queue[queueSize][1] = queue[queueIndex][1];
+                        visited[queue[queueIndex][0] - 1][queue[queueIndex][1]] = 1;
+                        queueSize++;
+                        found_some = 1;
+                    }
+                }
+                
+                // check if we can go right
+                if (queue[queueIndex][0] + 1 < grid_size) {
+                    int right = grid[queue[queueIndex][0] + 1][queue[queueIndex][1]];
+                    int right_visited = visited[queue[queueIndex][0] + 1][queue[queueIndex][1]];
+                    if ((right == 0 || right == 2) && right_visited == 0) {
+                        queue[queueSize][0] = queue[queueIndex][0] + 1;
+                        queue[queueSize][1] = queue[queueIndex][1];
+                        visited[queue[queueIndex][0] + 1][queue[queueIndex][1]] = 1;
+                        queueSize++;
+                        found_some = 1;
+                    }
+                }
                 queueIndex++;
             }
         }
@@ -121,6 +146,10 @@ int main(void)
                     DrawRectangle(i * 8, j * 8, 8, 8, BLACK);
                 } else if (visited[i][j] == 1) {
                     DrawRectangle(i * 8, j * 8, 8, 8, LIME);
+                } else if (grid[i][j] == 2) {
+                    DrawRectangle(i * 8, j * 8, 8, 8, RED);
+                } else {
+                    DrawRectangle(i * 8, j * 8, 8, 8, WHITE);
                 }
             }
         }
