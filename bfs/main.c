@@ -7,6 +7,7 @@
 
 typedef enum ScreenColor { white = 0, skyblue, purple, lime } ScreenColor;
 
+
 int d(int x_start, int y_start, int x_end, int y_end) {
     return abs(x_start - x_end) + abs(y_start - y_end);
 }
